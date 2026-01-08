@@ -19,4 +19,4 @@ dependencies = [
 ostium = "ostium_cli.main:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ostium_cli"]
+packages = ["ostium_cli"]
