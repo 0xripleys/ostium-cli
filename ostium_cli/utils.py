@@ -5,8 +5,11 @@ from typing import Any
 
 from eth_account import Account
 from ostium_python_sdk import NetworkConfig, OstiumSDK
+from ostium_python_sdk.abi.trading_storage_abi import trading_storage_abi
 from rich.console import Console
 from rich.table import Table
+from web3 import Web3
+from web3.contract import Contract
 
 from ostium_cli.config import Network, get_private_key, get_rpc_url
 
@@ -58,3 +61,21 @@ def format_pnl(pnl: float) -> str:
     if pnl >= 0:
         return f"[green]+${pnl:.2f}[/green]"
     return f"[red]-${abs(pnl):.2f}[/red]"
+
+
+def get_trading_storage_contract(network: Network) -> tuple[Web3, Contract]:
+    """Get web3 instance and TradingStorage contract for on-chain queries."""
+    rpc_url = get_rpc_url(network)
+    w3 = Web3(Web3.HTTPProvider(rpc_url))
+
+    if network == Network.mainnet:
+        config = NetworkConfig.mainnet()
+    else:
+        config = NetworkConfig.testnet()
+
+    contract_address = config.contracts["tradingStorage"]
+    contract = w3.eth.contract(
+        address=Web3.to_checksum_address(contract_address),
+        abi=trading_storage_abi,
+    )
+    return w3, contract
