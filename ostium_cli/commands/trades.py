@@ -27,8 +27,9 @@ app = typer.Typer()
 
 
 # Rate limiting settings
-BATCH_SIZE = 10  # Max calls per batch to stay under rate limits
-BATCH_DELAY = 0.5  # Delay between batches in seconds
+# Limit to 10 calls per second to stay well under 15/second RPC limit
+BATCH_SIZE = 5  # Max calls per batch to stay under rate limits
+BATCH_DELAY = 0.6  # Delay between batches in seconds (ensures ~10 calls/sec max)
 
 
 def _execute_batched_calls(
@@ -42,7 +43,8 @@ def _execute_batched_calls(
         for call in chunk:
             batch.add(call)
         results.extend(batch.execute())
-        # Add delay between batches to respect rate limits
+        # Add delay between batches to respect rate limits (15/second max)
+        # Always delay after batch execution, except for the last batch
         if i + batch_size < len(calls):
             time.sleep(delay)
     return results
